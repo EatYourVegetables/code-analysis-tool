@@ -1,0 +1,11 @@
+{% extends "base.html" %} {% block content %}
+<div class="card bg-base-100 shadow-xl">
+  <div class="card-body">
+    <h2 class="card-title text-error">Error {{ status_code }}</h2>
+    <p>{{ detail }}</p>
+    <div class="card-actions justify-end">
+      <a href="/" class="btn btn-primary">Return to Home</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

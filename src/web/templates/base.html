@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Code Analysis Tool</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: "default",
+        flowchart: {
+          useMaxWidth: true,
+          htmlLabels: true,
+          curve: "basis",
+        },
+      });
+    </script>
+
+    <!-- Tailwind and DaisyUI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@2.51.1/dist/full.css"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
+    <!-- Custom styles -->
+    <style>
+      .drag-over {
+        @apply border-primary;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <div class="navbar bg-base-100 shadow-lg">
+      <div class="flex-1">
+        <a class="btn btn-ghost normal-case text-xl">Code Analysis Tool</a>
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <main class="container mx-auto px-4 py-8">
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- Toast container for notifications -->
+    <div id="toast-container" class="toast toast-end"></div>
+  </body>
+</html>
