@@ -11,9 +11,17 @@
         startOnLoad: true,
         theme: "default",
         flowchart: {
-          useMaxWidth: true,
           htmlLabels: true,
           curve: "basis",
+          padding: 15,
+          nodeSpacing: 50,
+          rankSpacing: 50,
+          useMaxWidth: false,
+        },
+        securityLevel: "loose",
+        themeVariables: {
+          fontSize: "16px",
+          fontFamily: "arial",
         },
       });
     </script>
@@ -32,12 +40,31 @@
         @apply border-primary;
       }
     </style>
+    <style>
+      .mermaid {
+        background: white;
+        border-radius: 0.5rem;
+      }
+
+      .mermaid svg {
+        max-width: 100%;
+        height: auto;
+        transition: transform 0.2s ease;
+      }
+    </style>
   </head>
   <body>
     <!-- Navbar -->
     <div class="navbar bg-base-100 shadow-lg">
       <div class="flex-1">
-        <a class="btn btn-ghost normal-case text-xl">Code Analysis Tool</a>
+        <a class="btn btn-ghost normal-case text-xl flex items-center gap-2">
+          <img
+            src="/static/logo.webp"
+            alt="Logo"
+            class="h-8 w-auto object-contain"
+          />
+          Code Analysis Tool
+        </a>
       </div>
     </div>
 

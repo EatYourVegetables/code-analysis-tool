@@ -53,7 +53,11 @@ async def analyze_files(files: List[UploadFile] = File(...)):
             "files": [],
             "functions": [],
             "classes": [],
-            "relationships": {},
+            "relationships": {
+                "function_calls": [],
+                "class_inheritance": [],
+                "import_dependencies": []
+            },
             "imports": [],
             "errors": []
         }
@@ -66,17 +70,13 @@ async def analyze_files(files: List[UploadFile] = File(...)):
                 if not file.filename.endswith('.py'):
                     continue
 
-                # Create a proper filename in the temp directory
                 file_path = Path(temp_dir) / file.filename
                 content = await file.read()
 
-                # Write the content properly
                 with open(file_path, "wb") as f:
                     f.write(content)
 
-                # Reset the file pointer for potential reuse
                 await file.seek(0)
-
                 file_paths.append(file_path)
                 results["files"].append(file.filename)
 
@@ -92,7 +92,6 @@ async def analyze_files(files: List[UploadFile] = File(...)):
             # Analyze each file
             for file_path in file_paths:
                 try:
-                    # Make sure to pass the Path object or string path, not the content
                     analysis = analyzer.analyze_file(file_path)
                     if "error" in analysis:
                         results["errors"].append({
@@ -104,6 +103,11 @@ async def analyze_files(files: List[UploadFile] = File(...)):
                     results["functions"].extend(analysis.get("functions", []))
                     results["classes"].extend(analysis.get("classes", []))
                     results["imports"].extend(analysis.get("imports", []))
+
+                    for rel_type, rel_data in analysis.get("relationships", {}).items():
+                        if rel_type in results["relationships"]:
+                            results["relationships"][rel_type].extend(rel_data)
+
                 except Exception as e:
                     results["errors"].append({
                         "file": str(file_path),
@@ -112,8 +116,11 @@ async def analyze_files(files: List[UploadFile] = File(...)):
 
             # Analyze relationships between files
             try:
-                results["relationships"] = analyzer.analyze_relationships(
-                    file_paths)
+                file_relationships = analyzer.analyze_relationships(file_paths)
+                # Merge the inter-file relationships
+                for rel_type, rel_data in file_relationships.items():
+                    if rel_type in results["relationships"]:
+                        results["relationships"][rel_type].extend(rel_data)
             except Exception as e:
                 results["errors"].append({
                     "component": "relationships",
@@ -201,42 +208,14 @@ async def ask_gpt(request: Request):
 async def generate_diagram(request: Request):
     try:
         data = await request.json()
-        diagram_type = data["type"]
         analysis = data["analysis"]
 
-        if diagram_type == "class":
-            diagram = mermaid_generator.generate_diagram(analysis)
-        else:
-            diagram = mermaid_generator.generate_flowchart(analysis)
-
-        return {"diagram": diagram}
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/api/questions/{question_id}")
-async def get_question_answer(question_id: int):
-    """
-    Get the answer to a specific question.
-
-    Args:
-        question_id: ID of the question (1-4)
-
-    Returns:
-        Question and answer as JSON
-    """
-    try:
-        file_path = OUTPUT_DIR / "questions" / f"question_{question_id}.json"
-
-        if not file_path.exists():
-            raise HTTPException(
-                status_code=404,
-                detail=f"Answer for question {question_id} not found"
-            )
-
-        with open(file_path, "r") as f:
-            return json.load(f)
+        # Always generate flowchart. I removed class diagram
+        # diagram = mermaid_generator.generate_flowchart(analysis) --- OLD, trying something new
+        mermaid_diagram = mermaid_generator.create_flowchart(analysis)
+        # print(f"ANALYSIS DATA: {analysis}")
+        # print(f"MERMAID DIAGRAM: {mermaid_diagram}")
+        return {"diagram": mermaid_diagram}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -13,7 +13,23 @@
         class="btn btn-primary"
         onclick="document.getElementById('fileInput').click()"
       >
-        Select Files
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-4 w-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+          ></path>
+          <path d="M14 2v6h6"></path>
+          <path d="M9 13h6"></path>
+          <path d="M9 17h6"></path>
+          <path d="M9 9h1"></path>
+        </svg>
+        &nbsp Select Files
       </button>
       <p class="mt-2 text-base-content/70">
         or drag and drop Python files here
@@ -44,7 +60,7 @@
 >
   <div class="card-body">
     <h2 class="card-title">Analysis Results</h2>
-    <div class="flex justify-between items-center gap-4"> 
+    <div class="flex justify-between items-center gap-4">
       <!-- Tabs -->
       <div class="tabs tabs-boxed">
         <a class="tab tab-active" data-tab="functions">Functions</a>
@@ -57,232 +73,222 @@
         <button id="generateDiagramBtn" class="btn btn-secondary gap-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
+            width="18"
+            height="18"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-git-branch"
           >
-            <path d="M2 9h6m-6 6h6m4-6h12M6 9v6m4-6v6m4-6v6" />
+            <circle cx="12" cy="18" r="3" />
+            <circle cx="6" cy="6" r="3" />
+            <circle cx="18" cy="6" r="3" />
+            <path d="M18 9v1a2 2 0 0 1-2 2H8" />
+            <path d="M12 15v-3" />
           </svg>
           Generate Diagram
         </button>
       </div>
     </div>
-      <div id="diagramSection" class="mt-4 hidden">
-        <div class="card bg-base-200">
-          <div class="card-body">
-            <div class="flex justify-between items-center">
-              <h3 class="card-title">Code Visualization</h3>
-              <div class="tabs tabs-boxed">
-                <a class="tab tab-active" data-diagram-type="class"
-                  >Class Diagram</a
-                >
-                <a class="tab" data-diagram-type="flow">Flow Chart</a>
-              </div>
-            </div>
-            <div id="mermaidDiagram" class="overflow-auto"></div>
+    <div id="diagramSection" class="mt-4 hidden">
+      <div class="card bg-base-200">
+        <div class="card-body">
+          <div class="flex justify-between items-center">
+            <h3 class="card-title">Code Visualization</h3>
           </div>
+          <div id="mermaidDiagram" class="overflow-auto"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div id="analysisContent" class="mt-4"></div>
+    <div class="divider mt-8">Ask Questions About Your Code</div>
+
+    <div id="gptSection" class="mt-4">
+      <div class="form-control">
+        <div class="input-group">
+          <input
+            type="text"
+            id="gptQuestion"
+            placeholder="Ask a question about your code..."
+            class="input input-bordered flex-1"
+          />
+          <button id="askGptBtn" class="btn btn-primary">Ask GPT-4</button>
         </div>
       </div>
 
-      <!-- Content -->
-      <div id="analysisContent" class="mt-4"></div>
-      <div class="divider mt-8">Ask Questions About Your Code</div>
-
-      <div id="gptSection" class="mt-4">
-        <div class="form-control">
-          <div class="input-group">
-            <input
-              type="text"
-              id="gptQuestion"
-              placeholder="Ask a question about your code..."
-              class="input input-bordered flex-1"
-            />
-            <button id="askGptBtn" class="btn btn-primary">Ask GPT-4</button>
-          </div>
-        </div>
-
-        <div id="gptResponse" class="mt-4 hidden">
-          <div class="card bg-base-200">
-            <div class="card-body">
-              <h3 class="card-title text-sm opacity-70">Question:</h3>
-              <p id="questionText" class="text-lg mb-4"></p>
-              <h3 class="card-title text-sm opacity-70">Answer:</h3>
-              <div id="answerText" class="prose"></div>
-            </div>
+      <div id="gptResponse" class="mt-4 hidden">
+        <div class="card bg-base-200">
+          <div class="card-body">
+            <h3 class="card-title text-sm opacity-70">Question:</h3>
+            <p id="questionText" class="text-lg mb-4"></p>
+            <h3 class="card-title text-sm opacity-70">Answer:</h3>
+            <div id="answerText" class="prose"></div>
           </div>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Updated JavaScript for the new UI -->
-  <script>
-    class CodeAnalyzer {
-      constructor() {
-        this.initializeElements();
-        this.initializeEventListeners();
-        this.currentResults = null;
-      }
+<!-- Updated JavaScript for the new UI -->
+<script>
+  class CodeAnalyzer {
+    constructor() {
+      this.initializeElements();
+      this.initializeEventListeners();
+      this.currentResults = null;
+    }
 
-      initializeElements() {
-        this.dropZone = document.getElementById("dropZone");
-        this.fileInput = document.getElementById("fileInput");
-        this.fileList = document.getElementById("fileList");
-        this.progressBar = document.getElementById("uploadProgress");
-        this.analysisResults = document.getElementById("analysisResults");
-        this.analysisContent = document.getElementById("analysisContent");
-        this.tabs = document.querySelectorAll(".tab");
-        this.analyzedFiles = document.getElementById("analyzedFiles");
-        this.gptQuestion = document.getElementById("gptQuestion");
-        this.askGptBtn = document.getElementById("askGptBtn");
-        this.gptResponse = document.getElementById("gptResponse");
-        this.questionText = document.getElementById("questionText");
-        this.answerText = document.getElementById("answerText");
-        this.generateDiagramBtn = document.getElementById("generateDiagramBtn");
-        this.diagramSection = document.getElementById("diagramSection");
-        this.diagramTabs = document.querySelectorAll("[data-diagram-type]");
-        this.mermaidDiagram = document.getElementById("mermaidDiagram");
-        this.currentDiagramType = "class";
-        this.initializeDiagramHandlers();
-      }
+    initializeElements() {
+      this.dropZone = document.getElementById("dropZone");
+      this.fileInput = document.getElementById("fileInput");
+      this.fileList = document.getElementById("fileList");
+      this.progressBar = document.getElementById("uploadProgress");
+      this.analysisResults = document.getElementById("analysisResults");
+      this.analysisContent = document.getElementById("analysisContent");
+      this.tabs = document.querySelectorAll(".tab");
+      this.analyzedFiles = document.getElementById("analyzedFiles");
+      this.gptQuestion = document.getElementById("gptQuestion");
+      this.askGptBtn = document.getElementById("askGptBtn");
+      this.gptResponse = document.getElementById("gptResponse");
+      this.questionText = document.getElementById("questionText");
+      this.answerText = document.getElementById("answerText");
+      this.generateDiagramBtn = document.getElementById("generateDiagramBtn");
+      this.diagramSection = document.getElementById("diagramSection");
+      this.mermaidDiagram = document.getElementById("mermaidDiagram");
+      this.currentDiagramType = "class";
+      this.currentDiagramType = "flow"; // Always flow chart
+      this.initializeDiagramHandlers();
+    }
 
-      initializeDiagramHandlers() {
-        this.generateDiagramBtn.addEventListener("click", () =>
-          this.handleGenerateDiagram()
-        );
+    initializeDiagramHandlers() {
+      this.generateDiagramBtn.addEventListener("click", () =>
+        this.handleGenerateDiagram()
+      );
+    }
 
-        this.diagramTabs.forEach((tab) => {
-          tab.addEventListener("click", () => {
-            this.currentDiagramType = tab.dataset.diagramType;
-            this.diagramTabs.forEach((t) =>
-              t.classList.toggle("tab-active", t === tab)
-            );
-            this.handleGenerateDiagram();
-          });
+    initializeEventListeners() {
+      // Drag and drop handlers
+      this.dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        this.dropZone.classList.add("drag-over");
+      });
+
+      this.dropZone.addEventListener("dragleave", () => {
+        this.dropZone.classList.remove("drag-over");
+      });
+
+      this.dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        this.dropZone.classList.remove("drag-over");
+        this.handleFiles(e.dataTransfer.files);
+      });
+
+      // File input handler
+      this.fileInput.addEventListener("change", (e) => {
+        this.handleFiles(e.target.files);
+      });
+
+      // Tab handlers
+      this.tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          this.switchTab(tab.dataset.tab);
         });
-      }
+      });
 
-      initializeEventListeners() {
-        // Drag and drop handlers
-        this.dropZone.addEventListener("dragover", (e) => {
-          e.preventDefault();
-          this.dropZone.classList.add("drag-over");
-        });
-
-        this.dropZone.addEventListener("dragleave", () => {
-          this.dropZone.classList.remove("drag-over");
-        });
-
-        this.dropZone.addEventListener("drop", (e) => {
-          e.preventDefault();
-          this.dropZone.classList.remove("drag-over");
-          this.handleFiles(e.dataTransfer.files);
-        });
-
-        // File input handler
-        this.fileInput.addEventListener("change", (e) => {
-          this.handleFiles(e.target.files);
-        });
-
-        // Tab handlers
-        this.tabs.forEach((tab) => {
-          tab.addEventListener("click", () => {
-            this.switchTab(tab.dataset.tab);
-          });
-        });
-
-        // GPT question handler
-        this.askGptBtn.addEventListener("click", () =>
-          this.handleGptQuestion()
-        );
-        this.gptQuestion.addEventListener("keypress", (e) => {
-          if (e.key === "Enter") {
-            this.handleGptQuestion();
-          }
-        });
-      }
-
-      async handleFiles(files) {
-        const formData = new FormData();
-        let fileCount = 0;
-
-        for (const file of files) {
-          if (file.name.endsWith(".py")) {
-            formData.append("files", file);
-            fileCount++;
-          }
+      // GPT question handler
+      this.askGptBtn.addEventListener("click", () => this.handleGptQuestion());
+      this.gptQuestion.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          this.handleGptQuestion();
         }
+      });
+    }
 
-        if (fileCount === 0) {
-          this.showToast("Please select Python (.py) files", "error");
-          return;
-        }
+    async handleFiles(files) {
+      const formData = new FormData();
+      let fileCount = 0;
 
-        this.showProgress();
-
-        try {
-          const response = await fetch("/api/analyze", {
-            method: "POST",
-            body: formData,
-          });
-
-          if (!response.ok) {
-            throw new Error("Analysis failed");
-          }
-
-          const results = await response.json();
-          this.updateAnalyzedFiles(results.files);
-          this.displayResults(results);
-        } catch (error) {
-          this.showToast(error.message, "error");
-        } finally {
-          this.hideProgress();
+      for (const file of files) {
+        if (file.name.endsWith(".py")) {
+          formData.append("files", file);
+          fileCount++;
         }
       }
 
-      updateAnalysisContent(tabName, content) {
-        const views = {
-          functions: this.createFunctionsView,
-          classes: this.createClassesView,
-          relationships: this.createRelationshipsView,
-        };
-
-        this.analysisContent.innerHTML = views[tabName].call(this, content);
+      if (fileCount === 0) {
+        this.showToast("Please select Python (.py) files", "error");
+        return;
       }
 
-      switchTab(tabName) {
-        // Update tab UI
-        this.tabs.forEach((tab) => {
-          tab.classList.toggle("tab-active", tab.dataset.tab === tabName);
+      this.showProgress();
+
+      try {
+        const response = await fetch("/api/analyze", {
+          method: "POST",
+          body: formData,
         });
 
-        // Update content using the stored views
-        if (this.views && this.views[tabName]) {
-          this.analysisContent.innerHTML = this.views[tabName];
+        if (!response.ok) {
+          throw new Error("Analysis failed");
         }
+
+        const results = await response.json();
+        this.updateAnalyzedFiles(results.files);
+        this.displayResults(results);
+      } catch (error) {
+        this.showToast(error.message, "error");
+      } finally {
+        this.hideProgress();
       }
+    }
 
-      displayResults(results) {
-        this.currentResults = results;
-        this.analysisResults.classList.remove("hidden");
+    updateAnalysisContent(tabName, content) {
+      const views = {
+        functions: this.createFunctionsView,
+        classes: this.createClassesView,
+        relationships: this.createRelationshipsView,
+      };
 
-        // Create the views for each tab
-        this.views = {
-          functions: this.createFunctionsView(results.functions || []),
-          classes: this.createClassesView(results.classes || []),
-          relationships: this.createRelationshipsView(
-            results.relationships || {}
-          ),
-          imports: this.createImportsView(results.imports || []), // Add imports view
-        };
+      this.analysisContent.innerHTML = views[tabName].call(this, content);
+    }
 
-        this.switchTab("functions"); // Default tab
+    switchTab(tabName) {
+      // Update tab UI
+      this.tabs.forEach((tab) => {
+        tab.classList.toggle("tab-active", tab.dataset.tab === tabName);
+      });
+
+      // Update content using the stored views
+      if (this.views && this.views[tabName]) {
+        this.analysisContent.innerHTML = this.views[tabName];
       }
+    }
 
-      createFunctionsView(functions) {
-        return `
+    displayResults(results) {
+      this.currentResults = results;
+      this.analysisResults.classList.remove("hidden");
+
+      // Create the views for each tab
+      this.views = {
+        functions: this.createFunctionsView(results.functions || []),
+        classes: this.createClassesView(results.classes || []),
+        relationships: this.createRelationshipsView(
+          results.relationships || {}
+        ),
+        imports: this.createImportsView(results.imports || []), // Add imports view
+      };
+
+      this.switchTab("functions"); // Default tab
+    }
+
+    createFunctionsView(functions) {
+      return `
             <div class="overflow-x-auto">
                 <table class="table table-zebra w-full">
                     <thead>
@@ -308,10 +314,10 @@
                 </table>
             </div>
         `;
-      }
+    }
 
-      createImportsView(imports) {
-        return `
+    createImportsView(imports) {
+      return `
             <div class="overflow-x-auto">
                 <table class="table table-zebra w-full">
                     <thead>
@@ -339,10 +345,10 @@
                 </table>
             </div>
         `;
-      }
+    }
 
-      createClassesView(classes) {
-        return `
+    createClassesView(classes) {
+      return `
             <div class="overflow-x-auto">
                 <table class="table table-zebra w-full">
                     <thead>
@@ -357,7 +363,7 @@
                           .map(
                             (cls) => `
                             <tr>
-                                <td>${cls.file}</td>
+                                <td>${cls.file.split("/").pop()}</td>
                                 <td>${cls.name}</td>
                                 <td>${
                                   cls.methods ? cls.methods.join(", ") : ""
@@ -370,10 +376,10 @@
                 </table>
             </div>
         `;
-      }
+    }
 
-      createRelationshipsView(relationships) {
-        return `
+    createRelationshipsView(relationships) {
+      return `
             <div class="space-y-4">
                 <div class="card bg-base-200">
                     <div class="card-body">
@@ -392,7 +398,9 @@
                                       .map(
                                         (call) => `
                                         <tr>
-                                            <td>${call.file}</td>
+                                            <td>${call.file
+                                              .split("/")
+                                              .pop()}</td>
                                             <td>${call.caller}</td>
                                             <td>${call.line}</td>
                                         </tr>
@@ -422,9 +430,13 @@
                                       .map(
                                         (inheritance) => `
                                         <tr>
-                                            <td>${inheritance.file}</td>
+                                            <td>${inheritance.file
+                                              .split("/")
+                                              .pop()}</td>
                                             <td>${inheritance.class}</td>
-                                            <td>${inheritance.inherits_from}</td>
+                                            <td>${
+                                              inheritance.inherits_from
+                                            }</td>
                                         </tr>
                                     `
                                       )
@@ -452,7 +464,9 @@
                                       .map(
                                         (imp) => `
                                         <tr>
-                                            <td>${imp.file}</td>
+                                            <td>${imp.file
+                                              .split("/")
+                                              .pop()}</td>
                                             <td>${imp.import_statement}</td>
                                             <td>${imp.line}</td>
                                         </tr>
@@ -466,37 +480,37 @@
                 </div>
             </div>
         `;
-      }
+    }
 
-      // Similar methods for classes and relationships views...
+    // Similar methods for classes and relationships views...
 
-      showProgress() {
-        this.progressBar.classList.remove("hidden");
-      }
+    showProgress() {
+      this.progressBar.classList.remove("hidden");
+    }
 
-      hideProgress() {
-        this.progressBar.classList.add("hidden");
-      }
+    hideProgress() {
+      this.progressBar.classList.add("hidden");
+    }
 
-      showToast(message, type = "info") {
-        const toast = document.createElement("div");
-        toast.className = `alert alert-${type}`;
-        toast.innerHTML = `<span>${message}</span>`;
+    showToast(message, type = "info") {
+      const toast = document.createElement("div");
+      toast.className = `alert alert-${type}`;
+      toast.innerHTML = `<span>${message}</span>`;
 
-        const container = document.getElementById("toast-container");
-        container.appendChild(toast);
+      const container = document.getElementById("toast-container");
+      container.appendChild(toast);
 
-        setTimeout(() => {
-          toast.remove();
-        }, 6000);
-      }
+      setTimeout(() => {
+        toast.remove();
+      }, 6000);
+    }
 
-      updateAnalyzedFiles(files) {
-        this.analyzedFiles.classList.remove("hidden");
-        const filesContainer = this.analyzedFiles.querySelector("div");
-        filesContainer.innerHTML = files
-          .map(
-            (file) => `
+    updateAnalyzedFiles(files) {
+      this.analyzedFiles.classList.remove("hidden");
+      const filesContainer = this.analyzedFiles.querySelector("div");
+      filesContainer.innerHTML = files
+        .map(
+          (file) => `
           <div class="badge badge-lg gap-2 py-4">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -508,116 +522,253 @@
               ${file}
           </div>
       `
-          )
-          .join("");
-      }
+        )
+        .join("");
+    }
 
-      async handleGptQuestion() {
-        const question = this.gptQuestion.value.trim();
-        if (!question || !this.currentResults) return;
+    async handleGptQuestion() {
+      const question = this.gptQuestion.value.trim();
+      if (!question || !this.currentResults) return;
 
-        this.askGptBtn.disabled = true;
-        this.askGptBtn.innerHTML = `
+      this.askGptBtn.disabled = true;
+      this.askGptBtn.innerHTML = `
           <span class="loading loading-spinner"></span>
           Thinking...
       `;
 
-        try {
-          const response = await fetch("/api/ask-gpt", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              question,
-              context: this.currentResults,
-            }),
-          });
+      try {
+        const response = await fetch("/api/ask-gpt", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            question,
+            context: this.currentResults,
+          }),
+        });
 
-          if (!response.ok) {
-            throw new Error("Failed to get GPT response");
-          }
-
-          const data = await response.json();
-          this.displayGptResponse(question, data.answer);
-        } catch (error) {
-          this.showToast(error.message, "error");
-        } finally {
-          this.askGptBtn.disabled = false;
-          this.askGptBtn.innerHTML = "Ask GPT-4";
+        if (!response.ok) {
+          throw new Error("Failed to get GPT response");
         }
-      }
 
-      displayGptResponse(question, answer) {
-        this.gptResponse.classList.remove("hidden");
-        this.questionText.textContent = question;
-        this.answerText.innerHTML = marked.parse(answer); // Using marked.js for markdown rendering
-        this.gptResponse.scrollIntoView({ behavior: "smooth" });
-      }
-
-      async handleGenerateDiagram() {
-        if (!this.currentResults) return;
-
-        this.generateDiagramBtn.disabled = true;
-        this.generateDiagramBtn.innerHTML = `
-          <span class="loading loading-spinner"></span>
-          Generating...
-      `;
-
-        try {
-          const response = await fetch("/api/generate-diagram", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              type: this.currentDiagramType,
-              analysis: this.currentResults,
-            }),
-          });
-
-          if (!response.ok) {
-            throw new Error("Failed to generate diagram");
-          }
-
-          const data = await response.json();
-          await this.renderDiagram(data.diagram);
-
-          this.diagramSection.classList.remove("hidden");
-          this.diagramSection.scrollIntoView({ behavior: "smooth" });
-        } catch (error) {
-          this.showToast(error.message, "error");
-        } finally {
-          this.generateDiagramBtn.disabled = false;
-          this.generateDiagramBtn.innerHTML = `
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M2 9h6m-6 6h6m4-6h12M6 9v6m4-6v6m4-6v6"/>
-              </svg>
-              Generate Diagram
-          `;
-        }
-      }
-
-      async renderDiagram(diagramCode) {
-        // Clear previous diagram
-        this.mermaidDiagram.innerHTML = "";
-
-        // Create new diagram container
-        const diagramContainer = document.createElement("div");
-        diagramContainer.className = "mermaid";
-        diagramContainer.textContent = diagramCode;
-
-        this.mermaidDiagram.appendChild(diagramContainer);
-
-        // Re-render mermaid diagram
-        await mermaid.run();
+        const data = await response.json();
+        this.displayGptResponse(question, data.answer);
+      } catch (error) {
+        this.showToast(error.message, "error");
+      } finally {
+        this.askGptBtn.disabled = false;
+        this.askGptBtn.innerHTML = "Ask GPT-4";
       }
     }
 
-    // Initialize when the document is loaded
-    document.addEventListener("DOMContentLoaded", () => {
-      new CodeAnalyzer();
-    });
-  </script>
-  {% endblock %}
-</div>
+    displayGptResponse(question, answer) {
+      this.gptResponse.classList.remove("hidden");
+      this.questionText.textContent = question;
+      this.answerText.innerHTML = marked.parse(answer); // Using marked.js for markdown rendering
+      this.gptResponse.scrollIntoView({ behavior: "smooth" });
+    }
+
+    async handleGenerateDiagram() {
+      if (!this.currentResults) return;
+
+      this.generateDiagramBtn.disabled = true;
+      this.generateDiagramBtn.innerHTML = `
+            <span class="loading loading-spinner"></span>
+            Generating...
+        `;
+
+      try {
+        const response = await fetch("/api/generate-diagram", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            type: "flow", // always flow. I removed class
+            analysis: this.currentResults,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to generate diagram");
+        }
+
+        const data = await response.json();
+        this.diagramSection.classList.remove("hidden");
+        await this.renderDiagram(data.diagram);
+        this.diagramSection.scrollIntoView({ behavior: "smooth" });
+      } catch (error) {
+        this.showToast(error.message, "error");
+      } finally {
+        this.generateDiagramBtn.disabled = false;
+        this.generateDiagramBtn.innerHTML = `
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-git-branch"
+              >
+                  <circle cx="12" cy="18" r="3"/>
+                  <circle cx="6" cy="6" r="3"/>
+                  <circle cx="18" cy="6" r="3"/>
+                  <path d="M18 9v1a2 2 0 0 1-2 2H8"/>
+                  <path d="M12 15v-3"/>
+              </svg>
+                Generate Diagram
+            `;
+      }
+    }
+
+    async renderDiagram(diagramCode) {
+      // Clear previous diagram
+      this.mermaidDiagram.innerHTML = "";
+
+      // Create container with proper styling
+      const container = document.createElement("div");
+      container.className = "border rounded-lg bg-white p-4 overflow-auto";
+
+      // Create toolbar
+      const toolbar = document.createElement("div");
+      toolbar.className = "flex gap-2 mb-4";
+
+      // Create diagram wrapper for zooming
+      const diagramWrapper = document.createElement("div");
+      diagramWrapper.id = "diagram-wrapper";
+      diagramWrapper.style.transformOrigin = "top left";
+
+      // Create diagram container
+      const diagramContainer = document.createElement("div");
+      diagramContainer.className = "mermaid w-full min-h-[400px]";
+      diagramContainer.textContent = diagramCode;
+
+      // Add zoom controls
+      const zoomControls = [
+        {
+          text: "Zoom In",
+          icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="11" x2="11" y1="8" y2="14"/><line x1="8" x2="14" y1="11" y2="11"/></svg>`,
+          action: () => this.zoomDiagram(1.2),
+        },
+        {
+          text: "Zoom Out",
+          icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="8" x2="14" y1="11" y2="11"/></svg>`,
+          action: () => this.zoomDiagram(0.8),
+        },
+        {
+          text: "Reset",
+          icon: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rotate-ccw"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>`,
+          action: () => this.resetZoom(),
+        },
+      ];
+
+      zoomControls.forEach((control) => {
+        const button = document.createElement("button");
+        button.className = "btn btn-sm gap-2";
+        button.innerHTML = `${control.icon}<span>${control.text}</span>`;
+        button.onclick = control.action;
+        toolbar.appendChild(button);
+      });
+
+      // Add download button
+      const downloadBtn = document.createElement("button");
+      downloadBtn.className = "btn btn-sm";
+      downloadBtn.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" x2="12" y1="15" y2="3"/>
+          </svg>
+          <span class="ml-2">Download SVG</span>
+      `;
+      downloadBtn.onclick = () => this.downloadDiagram();
+      toolbar.appendChild(downloadBtn);
+
+      // Assemble the components
+      diagramWrapper.appendChild(diagramContainer);
+      container.appendChild(toolbar);
+      container.appendChild(diagramWrapper);
+      this.mermaidDiagram.appendChild(container);
+
+      try {
+        // Render the diagram
+        await mermaid.run();
+
+        // Add post-render styling
+        const svg = diagramWrapper.querySelector("svg");
+        if (svg) {
+          svg.style.width = "100%";
+          svg.style.height = "auto";
+          svg.style.minWidth = "800px";
+        }
+      } catch (error) {
+        console.error("Mermaid rendering error:", error);
+        diagramContainer.innerHTML = `
+              <div class="text-red-500 p-4">
+                  Error rendering diagram: ${error.message}
+              </div>
+          `;
+      }
+    }
+
+    zoomDiagram(factor) {
+      const wrapper = document.getElementById("diagram-wrapper");
+      if (wrapper) {
+        const currentScale = parseFloat(
+          wrapper.style.transform?.match(/scale\((.*?)\)/)?.[1] || 1
+        );
+        const newScale = currentScale * factor;
+        wrapper.style.transform = `scale(${newScale})`;
+        // Adjust container scroll area if needed
+        const container = wrapper.parentElement;
+        if (container) {
+          container.scrollLeft = 0;
+          container.scrollTop = 0;
+        }
+      }
+    }
+
+    resetZoom() {
+      const wrapper = document.getElementById("diagram-wrapper");
+      if (wrapper) {
+        wrapper.style.transform = "scale(1)";
+        // Reset container scroll position
+        const container = wrapper.parentElement;
+        if (container) {
+          container.scrollLeft = 0;
+          container.scrollTop = 0;
+        }
+      }
+    }
+
+    async downloadDiagram() {
+      const svg = this.mermaidDiagram.querySelector("svg");
+      if (svg) {
+        // Create a blob from the SVG
+        const svgData = new XMLSerializer().serializeToString(svg);
+        const blob = new Blob([svgData], { type: "image/svg+xml" });
+
+        // Create download link
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "diagram.svg";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    }
+  }
+
+  // Initialize when the document is loaded
+  document.addEventListener("DOMContentLoaded", () => {
+    new CodeAnalyzer();
+  });
+</script>
+{% endblock %}
