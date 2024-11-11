@@ -46,7 +46,6 @@ pip install -r requirements.txt
 
 ```env
 OPENAI_API_KEY=your_openai_api_key
-DEBUG=False
 ```
 
 ## Environment Variables
@@ -57,17 +56,23 @@ DEBUG=False
 
 ## Running the Application
 
-1. Start the FastAPI server:
+1. Set the `PYTHONPATH` environment variable in the CLI:
 
-```bash
-python main.py
-```
+   ```bash
+   export PYTHONPATH=src
+   ```
 
-2. Open your browser and navigate to:
+2. Start the FastAPI server:
 
-```
-http://localhost:8000
-```
+   ```bash
+   python -m src.main
+   ```
+
+3. Open your browser and navigate to:
+
+   ```
+   http://localhost:8000
+   ```
 
 ## Usage Examples
 
@@ -161,51 +166,3 @@ code-analysis-tool/
 | "Failed to parse file" | Invalid Python syntax | Check file contents       |
 | "API key invalid"      | Incorrect OpenAI key  | Verify .env file          |
 | "File too large"       | >10MB file            | Split file or reduce size |
-
-## Development
-
-### Setting up a Development Environment
-
-1. Clone the repository
-2. Create a virtual environment
-3. Install development dependencies:
-
-```bash
-pip install -r requirements-dev.txt
-```
-
-### Running Tests
-
-```bash
-pytest tests/
-```
-
-### Code Style
-
-- Follow PEP 8
-- Use type hints
-- Document functions
-- Keep functions small and focused
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run tests
-5. Submit a pull request
-
-## Support
-
-For support, please:
-
-1. Check the troubleshooting guide
-2. Search existing issues
-3. Create a new issue with:
-   - Error message
-   - Steps to reproduce
-   - Environment details
